@@ -7,6 +7,8 @@
 #include <signal.h>
 #endif
 
+#include<stdio.h> //LOKI
+
 #include "cache.h"
 
 #ifndef NDEBUG
@@ -21,6 +23,7 @@ cache_t* cache_create(const char *name, size_t bufsize, size_t align,
                       cache_destructor_t* destructor) {
     cache_t* ret = calloc(1, sizeof(cache_t));
     char* nm = strdup(name);
+    printf("***** LOKI cache.c cache_create doing a calloc of %d\n",initial_pool_size);
     void** ptr = calloc(initial_pool_size, sizeof(void*));
     if (ret == NULL || nm == NULL || ptr == NULL ||
         pthread_mutex_init(&ret->mutex, NULL) == -1) {
@@ -76,6 +79,7 @@ void* cache_alloc(cache_t *cache) {
         ret = cache->ptr[--cache->freecurr];
         object = get_object(ret);
     } else {
+        printf("***** LOKI cache.c cache_alloc doing a malloc of %zd\n", cache->bufsize);
         object = ret = malloc(cache->bufsize);
         if (ret != NULL) {
             object = get_object(ret);

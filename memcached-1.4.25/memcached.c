@@ -5097,6 +5097,9 @@ static bool sanitycheck(void) {
 }
 
 int main (int argc, char **argv) {
+
+    printf("***** LOKI memcached.c main print of proof\n");
+
     int c;
     bool lock_memory = false;
     bool do_daemonize = false;

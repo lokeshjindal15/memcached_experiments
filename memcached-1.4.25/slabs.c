@@ -103,6 +103,7 @@ void slabs_init(const size_t limit, const double factor, const bool prealloc) {
 
     if (prealloc) {
         /* Allocate everything in a big chunk with malloc */
+        printf("***** LOKI slabs.c slabs_init doing a malloc of %zd\n", mem_limit);
         mem_base = malloc(mem_limit);
         if (mem_base != NULL) {
             mem_current = mem_base;
@@ -407,6 +408,7 @@ static void do_slabs_stats(ADD_STAT add_stats, void *c) {
 static void *memory_allocate(size_t size) {
     void *ret;
 
+    printf("***** LOKI slabs.c memory_allocate doing a malloc of %zd\n", size);
     if (mem_base == NULL) {
         /* We are not using a preallocated large memory chunk */
         ret = malloc(size);

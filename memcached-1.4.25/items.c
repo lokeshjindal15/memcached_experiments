@@ -445,6 +445,7 @@ char *item_cachedump(const unsigned int slabs_clsid, const unsigned int limit, u
     pthread_mutex_lock(&lru_locks[id]);
     it = heads[id];
 
+    printf("***** LOKI items.c item_cachedump doing a malloc of size %u\n", memlimit);
     buffer = malloc((size_t)memlimit);
     if (buffer == 0) {
         return NULL;
