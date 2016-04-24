@@ -2,6 +2,22 @@
 
 ## Dependencies
 
+autoreconf -ivf
+./configure
+make
+make test
+sudo make install
+
+start memcached server:
+memcached -d -m 256 -p 11211 -v
+
+run benchmark:
+memcslap --servers 127.0.0.1:11211 --concurrency=1000 --execute-number=200 --initial-load=1000 --flush
+
+kill memcached server:
+killall memcached
+
+
 * libevent, http://www.monkey.org/~provos/libevent/ (libevent-dev)
 
 ## Environment

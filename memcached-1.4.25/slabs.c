@@ -21,6 +21,10 @@
 #include <assert.h>
 #include <pthread.h>
 
+
+#include <sys/mman.h>
+
+#define _USE_MALLOC_ 0
 //#define DEBUG_SLAB_MOVER
 /* powers-of-N allocation structures */
 
@@ -48,6 +52,11 @@ static bool mem_limit_reached = false;
 static int power_largest;
 
 static void *mem_base = NULL;
+
+#if (_USE_MALLOC_ != 1)
+static int mmap_offset = 0;
+#endif
+
 static void *mem_current = NULL;
 static size_t mem_avail = 0;
 
@@ -408,11 +417,33 @@ static void do_slabs_stats(ADD_STAT add_stats, void *c) {
 static void *memory_allocate(size_t size) {
     void *ret;
 
-    printf("***** LOKI slabs.c memory_allocate doing a malloc of %zd\n", size);
     if (mem_base == NULL) {
+        printf("***** LOKI slabs.c NEW memory_allocate doing a malloc of %zd\n", size);
         /* We are not using a preallocated large memory chunk */
+#if (_USE_MALLOC_ == 1)
         ret = malloc(size);
+#else
+        int fd;
+        fd = open("/home/cs736/Documents/fs_default/random_3GB.img", O_RDWR);
+        if (fd == -1)
+        {
+            printf("ERROR! fd returned as -1 while opening file \n");
+            exit(1);
+        }
+        printf("***** LOKI slabs.c memory_allocate doing mmap for fd:%d at mmap_offset:%d\n", fd, mmap_offset);
+        ret = mmap(NULL, size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, mmap_offset);
+        if(ret == (void *) -1)
+        {
+            printf("ERROR! ret returned as -1 while mmapping file \n");
+            exit(1);
+        }
+        mmap_offset += size;
+        mmap_offset = mmap_offset + (4096 - (mmap_offset % 4096));
+        printf("***** LOKI slabs.c memory_allocate fd is:%d and ret is:%p and mmap_offset is:%d\n", fd, ret, mmap_offset);
+        close(fd);
+#endif
     } else {
+        printf("***** LOKI slabs.c memory_allocate adjusting for size of %zd\n", size);
         ret = mem_current;
 
         if (size > mem_avail) {
