@@ -188,7 +188,7 @@ static int grow_slab_list (const unsigned int id) {
     slabclass_t *p = &slabclass[id];
     if (p->slabs == p->list_size) {
         size_t new_size =  (p->list_size != 0) ? p->list_size * 2 : 16;
-        void *new_list = realloc(p->slab_list, new_size * sizeof(void *));
+        void *new_list = realloc(p->slab_list, new_size * sizeof(void *));//LOKI not interested
         if (new_list == 0) return 0;
         p->list_size = new_size;
         p->slab_list = new_list;

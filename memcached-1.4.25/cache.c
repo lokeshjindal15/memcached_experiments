@@ -65,6 +65,7 @@ void cache_destroy(cache_t *cache) {
         }
         free(ptr);
     }
+    printf("***** LOKI destroying cache and calling frees\n");
     free(cache->name);
     free(cache->ptr);
     pthread_mutex_destroy(&cache->mutex);
@@ -134,7 +135,7 @@ void cache_free(cache_t *cache, void *ptr) {
     } else {
         /* try to enlarge free connections array */
         size_t newtotal = cache->freetotal * 2;
-        void **new_free = realloc(cache->ptr, sizeof(char *) * newtotal);
+        void **new_free = realloc(cache->ptr, sizeof(char *) * newtotal); //LOKI not interested
         if (new_free) {
             cache->freetotal = newtotal;
             cache->ptr = new_free;

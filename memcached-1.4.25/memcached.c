@@ -262,7 +262,7 @@ static int add_msghdr(conn *c)
     assert(c != NULL);
 
     if (c->msgsize == c->msgused) {
-        msg = realloc(c->msglist, c->msgsize * 2 * sizeof(struct msghdr));
+        msg = realloc(c->msglist, c->msgsize * 2 * sizeof(struct msghdr));//LOKI not interested
         if (! msg) {
             STATS_LOCK();
             stats.malloc_fails++;
@@ -611,7 +611,7 @@ static void conn_shrink(conn *c) {
         if (c->rcurr != c->rbuf)
             memmove(c->rbuf, c->rcurr, (size_t)c->rbytes);
 
-        newbuf = (char *)realloc((void *)c->rbuf, DATA_BUFFER_SIZE);
+        newbuf = (char *)realloc((void *)c->rbuf, DATA_BUFFER_SIZE);//LOKI not interested
 
         if (newbuf) {
             c->rbuf = newbuf;
@@ -622,7 +622,7 @@ static void conn_shrink(conn *c) {
     }
 
     if (c->isize > ITEM_LIST_HIGHWAT) {
-        item **newbuf = (item**) realloc((void *)c->ilist, ITEM_LIST_INITIAL * sizeof(c->ilist[0]));
+        item **newbuf = (item**) realloc((void *)c->ilist, ITEM_LIST_INITIAL * sizeof(c->ilist[0]));//LOKI not interested
         if (newbuf) {
             c->ilist = newbuf;
             c->isize = ITEM_LIST_INITIAL;
@@ -631,7 +631,7 @@ static void conn_shrink(conn *c) {
     }
 
     if (c->msgsize > MSG_LIST_HIGHWAT) {
-        struct msghdr *newbuf = (struct msghdr *) realloc((void *)c->msglist, MSG_LIST_INITIAL * sizeof(c->msglist[0]));
+        struct msghdr *newbuf = (struct msghdr *) realloc((void *)c->msglist, MSG_LIST_INITIAL * sizeof(c->msglist[0]));//LOKI not interested
         if (newbuf) {
             c->msglist = newbuf;
             c->msgsize = MSG_LIST_INITIAL;
@@ -640,7 +640,7 @@ static void conn_shrink(conn *c) {
     }
 
     if (c->iovsize > IOV_LIST_HIGHWAT) {
-        struct iovec *newbuf = (struct iovec *) realloc((void *)c->iov, IOV_LIST_INITIAL * sizeof(c->iov[0]));
+        struct iovec *newbuf = (struct iovec *) realloc((void *)c->iov, IOV_LIST_INITIAL * sizeof(c->iov[0]));//LOKI not interested
         if (newbuf) {
             c->iov = newbuf;
             c->iovsize = IOV_LIST_INITIAL;
@@ -701,7 +701,7 @@ static int ensure_iov_space(conn *c) {
 
     if (c->iovused >= c->iovsize) {
         int i, iovnum;
-        struct iovec *new_iov = (struct iovec *)realloc(c->iov,
+        struct iovec *new_iov = (struct iovec *)realloc(c->iov,//LOKI not interested
                                 (c->iovsize * 2) * sizeof(struct iovec));
         if (! new_iov) {
             STATS_LOCK();
@@ -792,7 +792,7 @@ static int build_udp_headers(conn *c) {
     if (c->msgused > c->hdrsize) {
         void *new_hdrbuf;
         if (c->hdrbuf) {
-            new_hdrbuf = realloc(c->hdrbuf, c->msgused * 2 * UDP_HEADER_SIZE);
+            new_hdrbuf = realloc(c->hdrbuf, c->msgused * 2 * UDP_HEADER_SIZE);//LOKI not interested
         } else {
             new_hdrbuf = malloc(c->msgused * 2 * UDP_HEADER_SIZE);
         }
@@ -1453,7 +1453,7 @@ static bool grow_stats_buf(conn *c, size_t needed) {
     }
 
     if (nsize != c->stats.size) {
-        char *ptr = realloc(c->stats.buffer, nsize);
+        char *ptr = realloc(c->stats.buffer, nsize);//LOKI not interested
         if (ptr) {
             c->stats.buffer = ptr;
             c->stats.size = nsize;
@@ -1578,11 +1578,11 @@ static void bin_read_key(conn *c, enum bin_substates next_substate, int extra) {
         }
 
         if (nsize != c->rsize) {
-            if (settings.verbose > 1) {
+            if (settings.verbose > 0) {//LOKI 1->0
                 fprintf(stderr, "%d: Need to grow buffer from %lu to %lu\n",
                         c->sfd, (unsigned long)c->rsize, (unsigned long)nsize);
             }
-            char *newm = realloc(c->rbuf, nsize);
+            char *newm = realloc(c->rbuf, nsize);//***** LOKI check this
             if (newm == NULL) {
                 STATS_LOCK();
                 stats.malloc_fails++;
@@ -3878,7 +3878,7 @@ static enum try_read_result try_read_network(conn *c) {
                 return gotdata;
             }
             ++num_allocs;
-            char *new_rbuf = realloc(c->rbuf, c->rsize * 2);
+            char *new_rbuf = realloc(c->rbuf, c->rsize * 2);//LOKI not interested
             if (!new_rbuf) {
                 STATS_LOCK();
                 stats.malloc_fails++;
