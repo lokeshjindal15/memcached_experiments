@@ -65,6 +65,7 @@ void assoc_init(const int hashtable_init) {
         hashpower = hashtable_init;
     }
     primary_hashtable = calloc(hashsize(hashpower), sizeof(void *));
+    printf("***** LOKI assoc.c assoc_init doing a calloc of size %zd for hashpower %d\n", hashsize(hashpower), hashpower);
     if (! primary_hashtable) {
         fprintf(stderr, "Failed to init hashtable.\n");
         exit(EXIT_FAILURE);
@@ -127,6 +128,7 @@ static void assoc_expand(void) {
     old_hashtable = primary_hashtable;
 
     primary_hashtable = calloc(hashsize(hashpower + 1), sizeof(void *));
+    printf("***** LOKI assoc.c assoc_expand doing a calloc of size %zd for hashpower %d\n", hashsize(hashpower+1), hashpower+1);
     if (primary_hashtable) {
         if (settings.verbose > 1)
             fprintf(stderr, "Hash table expansion starting\n");
@@ -236,7 +238,8 @@ static void *assoc_maintenance_thread(void *arg) {
                     expand_bucket++;
                     if (expand_bucket == hashsize(hashpower - 1)) {
                         expanding = false;
-                        free(old_hashtable);
+                        free(old_hashtable);//LOKI this is where old hash table is deleted since completely moved to new primary
+                        printf("***** LOKI assoc.c assoc_maintenance_thread freeing old hashtable\n");
                         STATS_LOCK();
                         stats.hash_bytes -= hashsize(hashpower - 1) * sizeof(void *);
                         stats.hash_is_expanding = 0;

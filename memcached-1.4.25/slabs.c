@@ -133,7 +133,7 @@ void slabs_init(const size_t limit, const double factor, const bool prealloc) {
         slabclass[i].size = size;
         slabclass[i].perslab = settings.item_size_max / slabclass[i].size;
         size *= factor;
-        if (settings.verbose > 1) {
+        if (settings.verbose > 0) {//LOKI 1->0
             fprintf(stderr, "slab class %3d: chunk size %9u perslab %7u\n",
                     i, slabclass[i].size, slabclass[i].perslab);
         }
@@ -142,7 +142,7 @@ void slabs_init(const size_t limit, const double factor, const bool prealloc) {
     power_largest = i;
     slabclass[power_largest].size = settings.item_size_max;
     slabclass[power_largest].perslab = 1;
-    if (settings.verbose > 1) {
+    if (settings.verbose > 0) {//LOKI 1->0
         fprintf(stderr, "slab class %3d: chunk size %9u perslab %7u\n",
                 i, slabclass[i].size, slabclass[i].perslab);
     }
