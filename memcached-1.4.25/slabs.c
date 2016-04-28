@@ -24,7 +24,6 @@
 
 #include <sys/mman.h>
 
-#define _USE_MALLOC_ 0
 //#define DEBUG_SLAB_MOVER
 /* powers-of-N allocation structures */
 
@@ -112,7 +111,7 @@ void slabs_init(const size_t limit, const double factor, const bool prealloc) {
 
     if (prealloc) {
         /* Allocate everything in a big chunk with malloc */
-        printf("***** LOKI slabs.c slabs_init doing a malloc of %zd\n", mem_limit);
+        printf("##### LOKI slabs.c slabs_init doing a malloc of %zd\n", mem_limit);
         mem_base = malloc(mem_limit);
         if (mem_base != NULL) {
             mem_current = mem_base;
@@ -418,28 +417,29 @@ static void *memory_allocate(size_t size) {
     void *ret;
 
     if (mem_base == NULL) {
-        printf("***** LOKI slabs.c NEW memory_allocate doing a malloc of %zd\n", size);
+        //printf("***** LOKI slabs.c NEW memory_allocate doing a malloc of %zd\n", size);
         /* We are not using a preallocated large memory chunk */
 #if (_USE_MALLOC_ == 1)
         ret = malloc(size);
 #else
         int fd;
-        fd = open("/home/cs736/Documents/fs_default/random_3GB.img", O_RDWR);
+        // fd = open("/home/cs736/Documents/fs_default/random_3GB.img", O_RDWR);
+        fd = open(slabfile, O_RDWR);
         if (fd == -1)
         {
-            printf("ERROR! fd returned as -1 while opening file \n");
+            printf("ERROR! fd returned as -1 while opening file %s\n", slabfile);
             exit(1);
         }
-        printf("***** LOKI slabs.c memory_allocate doing mmap for fd:%d at mmap_offset:%d\n", fd, mmap_offset);
+        //printf("***** LOKI slabs.c memory_allocate doing mmap for fd:%d at mmap_offset:%d for file %s\n", fd, mmap_offset, slabfile);
         ret = mmap(NULL, size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, mmap_offset);
         if(ret == (void *) -1)
         {
-            printf("ERROR! ret returned as -1 while mmapping file \n");
+            printf("ERROR! ret returned as -1 while mmapping file %s\n", slabfile);
             exit(1);
         }
         mmap_offset += size;
         mmap_offset = mmap_offset + (4096 - (mmap_offset % 4096));
-        printf("***** LOKI slabs.c memory_allocate fd is:%d and ret is:%p and mmap_offset is:%d\n", fd, ret, mmap_offset);
+        //printf("***** LOKI slabs.c memory_allocate fd is:%d and ret is:%p and mmap_offset is:%d\n", fd, ret, mmap_offset);
         close(fd);
 #endif
     } else {

@@ -4,6 +4,25 @@
  * The main memcached header holding commonly used data
  * structures and function prototypes.
  */
+#ifndef _USE_MALLOC_
+#define _USE_MALLOC_ 1
+
+#if (0)
+#define slabfile "/home/cs736/Documents/fs_default/random_3GB.img"
+#define hashfile "/home/cs736/Documents/fs_default/hash_3GB.img"
+#endif
+
+#if (0)
+#define slabfile "/home/cs736/Documents/fs_tmpfs/random_3GB.img"
+#define hashfile "/home/cs736/Documents/fs_tmpfs/hash_700MB.img"
+#endif
+
+#if (0)
+#define slabfile "/home/cs736/Documents/fs_pmfs/random_3GB.img"
+#define hashfile "/home/cs736/Documents/fs_pmfs/hash_700MB.img"
+#endif
+
+#endif //_USE_MALLOC_
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -609,6 +628,7 @@ void append_stat(const char *name, ADD_STAT add_stats, conn *c,
                  const char *fmt, ...);
 
 enum store_item_type store_item(item *item, int comm, conn *c);
+
 
 #if HAVE_DROP_PRIVILEGES
 extern void drop_privileges(void);

@@ -25,6 +25,9 @@
 #include <assert.h>
 #include <pthread.h>
 
+
+#include <sys/mman.h>
+
 static pthread_cond_t maintenance_cond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t maintenance_lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t hash_items_counter_lock = PTHREAD_MUTEX_INITIALIZER;
@@ -60,16 +63,49 @@ static bool started_expanding = false;
  */
 static unsigned int expand_bucket = 0;
 
+
+#if (_USE_MALLOC_ == 0)
+
+static int mmap_offset = 0;
+
+void replace_calloc_with_mmap(int size)
+{
+    // printf("##### LOKI assoc.c Doing mmap in file /home/cs736/Documents/fs_default/hash_3GB.img\n");
+    printf("##### LOKI assoc.c Doing mmap in file %s\n", hashfile);
+        int fd;
+        fd = open(hashfile, O_RDWR);
+        if (fd == -1)
+        {
+            printf("ERROR! fd returned as -1 while opening file %s\n", hashfile);
+            exit(1);
+        }
+        primary_hashtable = mmap(NULL, size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, mmap_offset);
+        mmap_offset += size;
+        mmap_offset = mmap_offset + (4096 - (mmap_offset % 4096));
+        if(primary_hashtable == (void *) -1)
+        {
+            printf("ERROR! primary_hashtable returned as -1 while mmapping file %s\n", hashfile);
+            exit(1);
+        }
+    memset(primary_hashtable, 0, size);
+}
+#endif
+
+
 void assoc_init(const int hashtable_init) {
     if (hashtable_init) {
         hashpower = hashtable_init;
     }
+#if (_USE_MALLOC_ !=0)
     primary_hashtable = calloc(hashsize(hashpower), sizeof(void *));
-    printf("***** LOKI assoc.c assoc_init doing a calloc of size %zd for hashpower %d\n", hashsize(hashpower), hashpower);
+    printf("##### LOKI assoc.c assoc_init doing a calloc of size %zd for hashpower %d\n", hashsize(hashpower), hashpower);
     if (! primary_hashtable) {
         fprintf(stderr, "Failed to init hashtable.\n");
         exit(EXIT_FAILURE);
     }
+#else
+    replace_calloc_with_mmap(hashsize(hashpower) * sizeof(void *));
+#endif
     STATS_LOCK();
     stats.hash_power_level = hashpower;
     stats.hash_bytes = hashsize(hashpower) * sizeof(void *);
@@ -127,8 +163,12 @@ static item** _hashitem_before (const char *key, const size_t nkey, const uint32
 static void assoc_expand(void) {
     old_hashtable = primary_hashtable;
 
+#if (_USE_MALLOC_ != 0)
     primary_hashtable = calloc(hashsize(hashpower + 1), sizeof(void *));
-    printf("***** LOKI assoc.c assoc_expand doing a calloc of size %zd for hashpower %d\n", hashsize(hashpower+1), hashpower+1);
+    printf("##### LOKI assoc.c assoc_expand doing a calloc of size %zd for hashpower %d\n", hashsize(hashpower+1), hashpower+1);
+#else
+    replace_calloc_with_mmap(hashsize(hashpower + 1) * sizeof(void *));
+#endif
     if (primary_hashtable) {
         if (settings.verbose > 1)
             fprintf(stderr, "Hash table expansion starting\n");
@@ -238,8 +278,12 @@ static void *assoc_maintenance_thread(void *arg) {
                     expand_bucket++;
                     if (expand_bucket == hashsize(hashpower - 1)) {
                         expanding = false;
+#if (_USE_MALLOC_ != 0)
                         free(old_hashtable);//LOKI this is where old hash table is deleted since completely moved to new primary
-                        printf("***** LOKI assoc.c assoc_maintenance_thread freeing old hashtable\n");
+                        printf("##### LOKI assoc.c assoc_maintenance_thread freeing old hashtable\n");
+#else
+                        printf("##### LOKI assoc.c SKIPPING freeing old hashtable\n");
+#endif
                         STATS_LOCK();
                         stats.hash_bytes -= hashsize(hashpower - 1) * sizeof(void *);
                         stats.hash_is_expanding = 0;
